@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f6ef63">
+<title>SYREX LAB — Audio Tools</title>
+<style>
+  :root{
+    --ink:#111111;--paper:#fffef8;--yellow:#f6ef63;--pink:#ff9ecb;--blue:#9ecbff;--green:#b9f3c5;--orange:#ffb36b;
+    --line:3px solid var(--ink);--shadow:6px 6px 0 var(--ink);--shadow-sm:4px 4px 0 var(--ink);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:#f2f0e8;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:500}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:3px dashed #2455ff;outline-offset:3px}
+  .app{min-height:100vh;display:grid;grid-template-columns:254px minmax(0,1fr)}
+  .sidebar{background:var(--yellow);border-right:var(--line);padding:22px 16px 18px;display:flex;flex-direction:column;gap:26px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:5}
+  .brand{display:flex;gap:11px;align-items:center;padding:2px 3px}
+  .brand-mark{width:46px;height:46px;border:var(--line);background:var(--ink);color:white;display:grid;place-items:center;box-shadow:var(--shadow-sm);font-weight:950;font-size:21px;transform:rotate(-3deg)}
+  .brand-name{font-size:20px;line-height:1;font-weight:1000;letter-spacing:-1.1px}
+  .brand-sub{font-size:10px;font-weight:850;letter-spacing:2px;margin-top:5px}
+  .side-label{font-size:10px;text-transform:uppercase;letter-spacing:1.7px;font-weight:950;margin:0 0 9px 6px}
+  .nav{display:flex;flex-direction:column;gap:9px}
+  .nav-btn{border:2.5px solid transparent;background:transparent;display:flex;align-items:center;gap:11px;padding:12px 11px;text-align:left;font-size:13px;font-weight:850;transition:transform .12s,box-shadow .12s,border-color .12s}
+  .nav-btn .nav-icon{width:25px;height:25px;border:2px solid var(--ink);display:grid;place-items:center;background:var(--paper);font-size:14px;flex-shrink:0}
+  .nav-btn:hover{transform:translate(-2px,-2px)}
+  .nav-btn.active{background:var(--ink);color:white;border-color:var(--ink);box-shadow:var(--shadow-sm)}
+  .nav-btn.active .nav-icon{color:var(--ink);background:var(--yellow)}
+  .sidebar-spacer{flex:1}
+  .side-note{border:var(--line);background:var(--paper);padding:12px;box-shadow:var(--shadow-sm);font-size:11px;line-height:1.45}
+  .side-note strong{display:block;font-size:12px;margin-bottom:5px}
+  .side-foot{font-size:10px;font-weight:850;letter-spacing:.5px;padding:2px 3px}
+  .main{min-width:0}
+  .topbar{height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 32px;border-bottom:2px solid var(--ink);background:var(--paper)}
+  .crumb{font-size:12px;font-weight:850;color:#5b5b52}.crumb b{color:var(--ink)}
+  .top-right{display:flex;gap:9px;align-items:center}
+  .local-pill{border:2px solid var(--ink);background:var(--green);padding:8px 10px;font-size:10px;font-weight:950;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+  .local-dot{height:8px;width:8px;background:#16843d;border:1px solid var(--ink);border-radius:50%}
+  .tiny-button{border:2px solid var(--ink);background:white;padding:8px 11px;font-size:11px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+  .content{max-width:1400px;margin:0 auto;padding:30px 32px 56px}
+  .page{display:none}.page.active{display:block}
+  .eyebrow{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:1000;letter-spacing:2px;text-transform:uppercase}
+  .eyebrow .line{width:30px;height:4px;background:var(--ink)}
+  h1{font-weight:1000;font-size:clamp(35px,4.4vw,58px);letter-spacing:-3.5px;line-height:.97;margin:15px 0 14px}
+  .intro{max-width:720px;font-size:14px;line-height:1.6;color:#383830;margin:0}
+  .hero-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:27px}
+  .hero-stamp{border:var(--line);background:var(--pink);box-shadow:var(--shadow);padding:12px 14px;transform:rotate(2deg);font-size:11px;font-weight:1000;letter-spacing:.5px;white-space:nowrap}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:25px 0 26px}
+  .stat{background:var(--paper);border:var(--line);box-shadow:var(--shadow-sm);padding:14px 16px;min-height:95px}
+  .stat:nth-child(2){background:var(--blue)}.stat:nth-child(3){background:var(--green)}
+  .stat-label{text-transform:uppercase;letter-spacing:1px;font-size:10px;font-weight:950}
+  .stat-value{font-size:22px;letter-spacing:-1px;font-weight:1000;margin-top:10px}
+  .stat-sub{font-size:10px;margin-top:2px;font-weight:750}
+  .workspace-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:18px;align-items:start}
+  .panel{border:var(--line);background:var(--paper);box-shadow:var(--shadow);min-width:0}
+  .panel-head{padding:16px 18px;border-bottom:var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .panel-title{font-size:15px;font-weight:1000;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+  .panel-title .mini-icon{width:27px;height:27px;display:grid;place-items:center;background:var(--yellow);border:2px solid var(--ink);font-size:14px}
+  .step-tag{font-size:9px;font-weight:1000;border:2px solid var(--ink);padding:5px 7px;background:white;white-space:nowrap}
+  .panel-body{padding:18px}
+  .dropzone{border:2.5px dashed var(--ink);background:#fbf9e8;min-height:190px;padding:24px 15px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .15s,transform .15s;position:relative}
+  .dropzone.dragover{background:#e3ffad;transform:translate(-2px,-2px)}
+  .upload-icon{height:48px;width:48px;border:var(--line);background:var(--yellow);display:grid;place-items:center;font-size:22px;box-shadow:3px 3px 0 var(--ink);margin-bottom:13px}
+  .dropzone h3{font-size:15px;margin:0 0 5px;font-weight:1000}
+  .dropzone p{font-size:11px;line-height:1.45;color:#5a5a50;margin:0 0 14px;max-width:340px}
+  .file-button,.primary-button,.secondary-button,.danger-button{border:var(--line);padding:11px 14px;font-size:12px;font-weight:1000;box-shadow:var(--shadow-sm);transition:transform .1s,box-shadow .1s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .file-button,.primary-button{background:var(--yellow)}.secondary-button{background:white}.danger-button{background:var(--pink)}
+  .file-button:hover,.primary-button:hover,.secondary-button:hover,.danger-button:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+  .file-button:active,.primary-button:active,.secondary-button:active,.danger-button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+  .hidden-input{display:none}
+  .file-info{display:none;margin-top:13px;border:2px solid var(--ink);padding:11px;background:white;align-items:center;gap:10px}
+  .file-info.visible{display:flex}
+  .file-symbol{height:35px;width:35px;display:grid;place-items:center;background:var(--blue);border:2px solid var(--ink);font-weight:1000;flex-shrink:0}
+  .file-name{font-size:12px;font-weight:950;overflow-wrap:anywhere}.file-meta{font-size:10px;color:#68685f;margin-top:3px}
+  .file-action{margin-left:auto;border:2px solid var(--ink);background:white;font-weight:900;padding:5px 8px;font-size:10px;flex-shrink:0}
+  audio{display:none;width:100%;height:36px;margin-top:12px}
+  audio.visible{display:block}
+  .settings-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  .field label{display:block;font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .field input,.field select{width:100%;min-height:42px;border:2px solid var(--ink);background:white;padding:9px 10px;font-weight:850;font-size:13px;outline-offset:2px}.static-setting{width:100%;min-height:42px;border:2px solid var(--ink);background:var(--green);padding:12px 10px;font-weight:1000;font-size:12px;display:flex;align-items:center}.summary-note{font-size:8px;font-weight:900;line-height:1.35;margin-top:3px}.fl-tempo-note{font-size:10px;line-height:1.5;margin:8px 0 0;color:#4e4e45}.static-setting{width:100%;min-height:42px;border:2px solid var(--ink);background:var(--green);padding:12px 10px;font-weight:1000;font-size:12px;display:flex;align-items:center}.summary-note{font-size:8px;font-weight:900;line-height:1.35;margin-top:3px}.fl-tempo-note{font-size:10px;line-height:1.5;margin:8px 0 0;color:#4e4e45}
+  .helper{font-size:10px;line-height:1.5;color:#5f5f55;margin-top:7px}
+  .primary-button{width:100%;min-height:46px}
+  .button-row{display:flex;gap:10px;margin-top:12px}.button-row>*{flex:1}
+  .mini-divider{height:1px;background:#d7d5ca;margin:18px 0}
+  .demo-note{font-size:11px;line-height:1.5;color:#57574e;margin:12px 0 0}
+  .results-empty{min-height:350px;padding:25px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .empty-art{width:93px;height:83px;position:relative;margin-bottom:19px}
+  .empty-art .block{position:absolute;border:var(--line);box-shadow:3px 3px 0 var(--ink)}
+  .empty-art .a{width:44px;height:44px;background:var(--pink);left:0;top:0;transform:rotate(-8deg)}
+  .empty-art .b{width:44px;height:44px;background:var(--blue);right:3px;top:27px;transform:rotate(7deg)}
+  .empty-art .c{width:35px;height:35px;background:var(--yellow);left:32px;top:21px;display:grid;place-items:center;font-size:22px;font-weight:1000}
+  .results-empty h3{font-size:17px;font-weight:1000;margin:0 0 8px}.results-empty p{max-width:300px;font-size:11px;line-height:1.55;color:#626257;margin:0 0 15px}
+  .privacy-line{font-size:10px;font-weight:800;color:#55554c;display:flex;align-items:center;gap:6px;justify-content:center;margin-top:16px}
+  .results-content{display:none;padding:17px}.results-content.visible{display:block}
+  .result-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:17px}
+  .summary-cell{border:2px solid var(--ink);padding:9px;background:white;min-width:0}
+  .summary-cell:nth-child(1){background:var(--yellow)}.summary-cell:nth-child(2){background:var(--blue)}.summary-cell:nth-child(3){background:var(--green)}
+  .summary-label{font-size:9px;text-transform:uppercase;font-weight:1000;letter-spacing:.7px}
+  .summary-value{font-size:17px;font-weight:1000;letter-spacing:-.6px;margin-top:5px;overflow-wrap:anywhere}
+  .progression-label{font-size:10px;text-transform:uppercase;font-weight:1000;letter-spacing:1px;margin:0 0 10px}
+  .chord-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-bottom:16px}
+  .chord-card{border:2px solid var(--ink);padding:10px 5px;background:white;min-width:0;text-align:center;position:relative}
+  .chord-card:nth-child(4n+1){background:#fff6c9}.chord-card:nth-child(4n+2){background:#e8f2ff}.chord-card:nth-child(4n+3){background:#e3ffe8}.chord-card:nth-child(4n){background:#ffebf5}
+  .chord-bar{font-size:8px;font-weight:1000;letter-spacing:1px;color:#55554e;text-transform:uppercase}
+  .chord-name{font-size:24px;font-weight:1000;letter-spacing:-1px;margin:5px 0}
+  .chord-notes{font-size:9px;font-weight:850;line-height:1.4;overflow-wrap:anywhere}.chord-edit{width:100%;margin-top:9px;padding:7px 5px;border:2px solid var(--ink);background:white;font-size:10px;font-weight:900;min-width:0}.chord-time{font-size:9px;font-weight:900;line-height:1.35;color:#4e4e46}.chord-edit-label{display:block;text-align:left;font-size:8px;text-transform:uppercase;font-weight:1000;letter-spacing:.6px;margin-top:8px}
+  .confidence{height:5px;background:#e4e2d8;border:1px solid var(--ink);margin-top:8px;overflow:hidden}
+  .confidence span{display:block;background:var(--ink);height:100%}
+  .midi-info{border:2px solid var(--ink);background:#f9f8ed;padding:13px;margin:12px 0}
+  .midi-info strong{font-size:12px;font-weight:1000;display:block;margin-bottom:7px}
+  .midi-info ol{font-size:10px;line-height:1.55;padding-left:17px;margin:0}
+  .download-button{width:100%;background:var(--green);border:var(--line);box-shadow:var(--shadow-sm);font-weight:1000;font-size:13px;padding:14px;margin-top:2px}
+  .disclaimer{font-size:10px;color:#5d5d53;line-height:1.55;margin-top:10px}
+  .toast{position:fixed;bottom:20px;right:22px;z-index:20;max-width:min(370px,calc(100vw - 32px));border:var(--line);background:var(--yellow);box-shadow:var(--shadow);padding:13px 16px;font-size:12px;font-weight:900;display:none}
+  .toast.show{display:block;animation:pop .2s ease-out}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .footer{padding-top:27px;margin-top:34px;border-top:2px solid var(--ink);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;font-weight:850;color:#64645a}
+  @media(max-width:1050px){.app{grid-template-columns:220px minmax(0,1fr)}.content{padding:25px 22px 45px}.topbar{padding:0 22px}.workspace-grid{grid-template-columns:1fr}.results-empty{min-height:250px}}
+  @media(max-width:720px){.app{display:block}.sidebar{position:relative;width:100%;height:auto;border-right:0;border-bottom:var(--line);padding:13px 14px;gap:12px}.brand{padding:0}.brand-mark{width:39px;height:39px}.brand-name{font-size:18px}.nav-wrap{overflow-x:auto}.side-label,.sidebar-spacer,.side-note,.side-foot{display:none}.nav{flex-direction:row;min-width:max-content;gap:6px}.nav-btn{padding:7px 9px;gap:7px;font-size:11px;border:2px solid transparent}.nav-btn .nav-icon{height:23px;width:23px}.nav-btn.active{box-shadow:3px 3px 0 var(--ink)}.topbar{height:52px;padding:0 14px}.content{padding:23px 14px 35px}.hero-row{display:block}.hero-stamp{display:inline-block;margin-top:18px}.stats{gap:8px}.stat{padding:10px;min-height:85px}.stat-value{font-size:17px}.stat-label{font-size:8px}.settings-row{grid-template-columns:1fr 1fr}.result-summary{gap:5px}.summary-cell{padding:7px}.summary-value{font-size:15px}.chord-list{gap:5px}.chord-card{padding:9px 3px}.chord-name{font-size:20px}.panel-head{padding:13px}.panel-body{padding:13px}.local-pill{font-size:8px;padding:6px}.crumb{font-size:10px}.tiny-button{font-size:9px;padding:6px 8px}}
+  @media(max-width:400px){.settings-row{grid-template-columns:1fr}.chord-notes{font-size:8px}.chord-name{font-size:18px}.stats{grid-template-columns:1fr}.stat{min-height:65px}.stat-value{margin-top:4px}}
+
+
+  /* Clean interface: keep only the controls and results needed for Piano Finder. */
+  .side-label,.side-note,.side-foot,.top-right,.eyebrow,.hero-stamp,.stats,
+  .dropzone > p,.helper,.demo-note,.privacy-line,.footer,.midi-info,.disclaimer,
+  .confidence,.chord-time,.summary-note,#empty-demo-btn,#demo-btn {display:none !important}
+  .sidebar{gap:20px}
+  .brand-sub{display:none}
+  .topbar{justify-content:flex-start}
+  .hero-row{margin-bottom:20px}
+  h1{margin-top:0}
+  .intro{max-width:640px}
+  .settings-row{grid-template-columns:repeat(2,minmax(0,1fr));margin:14px 0}
+  .select-note{display:block!important;font-size:10px;line-height:1.45;color:#4e4e45;margin-top:7px}
+  #chord-output{width:100%;min-height:42px;border:2px solid var(--ink);background:white;padding:9px 10px;font-weight:850;font-size:12px}
+  .result-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .summary-cell:nth-child(3){display:none}
+  .button-row{margin-top:10px}
+  .button-row #clear-btn{flex:1}
+  .results-empty p{display:none}
+  .results-empty{min-height:260px}
+  .chord-card{padding:12px 8px}
+  .chord-name{margin:7px 0}
+  @media(max-width:720px){
+    .hero-row{margin-bottom:18px}
+    .settings-row{grid-template-columns:minmax(0,1fr)}
+    .result-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+
+
+
+  /* Cleanup: remove duplicate/low-value interface copy without changing analysis behavior. */
+  #empty-demo-btn{display:none!important}
+  .sidebar .side-note,.sidebar .side-foot{display:none!important}
+  .hero-stamp{display:none!important}
+  .stats{display:none!important}
+
+
+  /* Video BPM Sync components use the same SYREX LAB neo-brutalist design system. */
+  .video-grid{display:grid;grid-template-columns:minmax(0,1.03fr) minmax(340px,.97fr);gap:18px;align-items:start}
+  .video-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .video-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 12px}
+  .video-metric{min-width:0;border:var(--line);box-shadow:var(--shadow-sm);padding:11px 10px;background:var(--yellow)}
+  .video-metric:nth-child(2){background:var(--blue)}.video-metric:nth-child(3){background:var(--green)}
+  .video-metric span{display:block;font-size:8px;font-weight:1000;text-transform:uppercase;letter-spacing:.65px;line-height:1.35}
+  .video-metric b{display:block;font-size:clamp(14px,1.5vw,21px);font-weight:1000;letter-spacing:-.8px;margin-top:8px;overflow-wrap:anywhere}
+  .video-checkbox{display:flex!important;align-items:center;gap:8px;border:2px solid var(--ink);background:#fff;padding:10px;margin:12px 0;font-size:10px!important;font-weight:1000!important;letter-spacing:.65px}
+  .video-checkbox input{width:17px;height:17px;min-height:auto;accent-color:#111;margin:0}
+  .video-help{font-size:10px;line-height:1.5;color:#55554b;margin:8px 0 13px}
+  .video-preview-wrap{border:var(--line);background:#111;box-shadow:var(--shadow-sm);margin-top:14px;overflow:hidden;min-height:130px;display:grid;place-items:center}
+  .video-preview-wrap[hidden]{display:none!important}
+  #video-preview{display:block;width:100%;max-height:410px;background:#111;object-fit:contain}
+  .video-progress{height:12px;border:2px solid var(--ink);background:#e1dfd5;margin-top:17px;overflow:hidden}
+  #video-progress-fill{height:100%;width:0;background:var(--green);border-right:2px solid var(--ink);transition:width .2s ease}
+  .video-status{margin-top:11px;border:2px solid var(--ink);background:#fff;padding:11px;font-size:11px;font-weight:850;line-height:1.5;overflow-wrap:anywhere}
+  .video-status[data-state="error"]{background:var(--pink)}.video-status[data-state="busy"]{background:var(--yellow)}.video-status[data-state="done"]{background:var(--green)}
+  .video-download{display:block;text-align:center;text-decoration:none;margin-top:12px}
+  .video-download[hidden]{display:none!important}
+  .video-log-details{margin-top:15px;border-top:2px solid #d7d5ca;padding-top:12px}
+  .video-log-details summary{font-size:10px;font-weight:1000;letter-spacing:.8px;cursor:pointer;list-style:disclosure-closed}
+  .video-log-details[open] summary{margin-bottom:10px}
+  #video-log{white-space:pre-wrap;overflow-wrap:anywhere;background:#111;color:#f3f0dc;border:2px solid var(--ink);padding:10px;max-height:220px;overflow:auto;font:10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;margin:10px 0 0}
+  #video-start:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+  .video-grid .panel-body{min-width:0}
+  @media(max-width:1050px){.video-grid{grid-template-columns:1fr}}
+  @media(max-width:720px){.video-settings-grid{grid-template-columns:1fr 1fr}.video-metrics{gap:5px}.video-metric{padding:9px 7px}.video-metric span{font-size:7px}.video-metric b{font-size:16px}.video-grid{gap:14px}}
+  @media(max-width:420px){.video-settings-grid{grid-template-columns:1fr}.video-metrics{grid-template-columns:1fr 1fr}.video-metric:nth-child(3){grid-column:1/-1}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">S/</div><div><div class="brand-name">SYREX LAB</div><div class="brand-sub">AUDIO TOOLS</div></div></div>
+    <div class="nav-wrap">
+      <p class="side-label">Workspace</p>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-btn active" data-page="piano"><span class="nav-icon">♫</span><span>Piano Finder</span></button>
+        <button class="nav-btn" data-page="videosync"><span class="nav-icon">▶</span><span>Video BPM Sync</span></button>
+      </nav>
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div class="side-note"><strong>LOCAL-FIRST AUDIO</strong>Your selected files are processed in this browser. This page does not upload them to a server.</div>
+    <div class="side-foot">BUILT FOR PRODUCERS · V1.0</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar"><div class="crumb">SYREX LAB <span aria-hidden="true">/</span> <b id="crumb-current">Piano Finder</b></div><div class="top-right"><div class="local-pill"><span class="local-dot"></span> <span id="processor-label">Local tools</span></div><button class="tiny-button" id="help-btn">HOW IT WORKS ↗</button><button class="tiny-button" id="exit-app-btn" hidden style="background:var(--pink)">EXIT APP</button></div></header>
+    <div class="content">
+      <section class="page active" id="page-piano">
+        <div class="hero-row">
+          <div><div class="eyebrow"><span class="line"></span> HARMONY DETECTION / 01</div><h1>Find your<br><span style="background:var(--yellow);padding:0 7px 3px;border:2px solid var(--ink);box-decoration-break:clone;-webkit-box-decoration-break:clone">piano chords.</span></h1><p class="intro">Upload audio to find its four main chords and export a MIDI pattern for FL Studio.</p></div>
+          <div class="hero-stamp">HEAR IT. MAP IT. PLAY IT.</div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Input</div><div class="stat-value">Audio file</div><div class="stat-sub">WAV · MP3 · M4A*</div></div>
+          <div class="stat"><div class="stat-label">Output</div><div class="stat-value">4-Chord MIDI</div><div class="stat-sub">One chord per bar</div></div>
+          <div class="stat"><div class="stat-label">Workflow</div><div class="stat-value">FL Studio</div><div class="stat-sub">Import into Piano Roll</div></div>
+        </div>
+
+        <div class="workspace-grid">
+          <section class="panel">
+            <div class="panel-head"><div class="panel-title"><span class="mini-icon">↑</span> Upload your audio</div><span class="step-tag">STEP 01</span></div>
+            <div class="panel-body">
+              <div class="dropzone" id="audio-dropzone" role="button" tabindex="0" aria-label="Choose or drop an audio file">
+                <div class="upload-icon">↑</div><h3>Drop audio here</h3><p>Choose an audio file to analyze its main chord progression.</p>
+                <button type="button" class="file-button" id="choose-audio">CHOOSE AUDIO FILE</button>
+                <input class="hidden-input" type="file" id="audio-input" accept="audio/*,.wav,.mp3,.m4a,.aiff,.flac,.ogg,.webm">
+              </div>
+              <div class="file-info" id="audio-file-info"><div class="file-symbol">♫</div><div style="min-width:0"><div class="file-name" id="audio-file-name">Audio file</div><div class="file-meta" id="audio-file-meta">Ready to analyze</div></div><button class="file-action" id="remove-audio" type="button">REMOVE</button></div>
+              <audio id="audio-preview" controls></audio>
+              <div class="settings-row">
+                <div class="field"><label for="tempo-input">Tempo (BPM)</label><input id="tempo-input" type="number" min="40" max="240" step="0.1" value="" placeholder="Auto-detect"><div class="helper">Leave blank to detect the beat from the audio. Enter a BPM to override it.</div></div>
+                <div class="field"><label for="chord-output">Chord output</label><select id="chord-output">
+                  <option value="piano-bass">Piano + bass MIDI (4 bars)</option>
+                  <option value="two-bar">4 chords · 2 bars</option>
+                  <option value="triads">3-note chords MIDI (4 bars)</option>
+                  <option value="piano">Piano chords MIDI (4 bars)</option>
+                </select><div class="select-note" id="chord-output-note">Exports the four main chords across four bars.</div></div>
+              </div>
+              <button class="primary-button" id="analyze-btn" type="button" disabled>ANALYZE CHORDS <span>↗</span></button>
+              <div class="button-row"><button class="secondary-button" id="demo-btn" type="button">TRY DEMO PROGRESSION</button><button class="secondary-button" id="clear-btn" type="button">CLEAR</button></div>
+              <p class="demo-note">No file handy? Load the example progression: Am → F → G → Am at 84 BPM. It creates a real downloadable MIDI so you can test the FL Studio workflow.</p>
+              <div class="privacy-line">▣ Your audio stays on your device</div>
+            </div>
+          </section>
+
+          <section class="panel" id="results-panel">
+            <div class="panel-head"><div class="panel-title"><span class="mini-icon">♫</span> Chord results</div><span class="step-tag" id="result-step">WAITING FOR AUDIO</span></div>
+            <div class="results-empty" id="results-empty">
+              <div class="empty-art"><div class="block a"></div><div class="block b"></div><div class="block c">♫</div></div>
+              <h3>Your chords show up here.</h3><p>Upload audio to estimate the key and time-varying chords. Review or edit the chord labels before exporting the timed MIDI.</p><button class="secondary-button" id="empty-demo-btn" type="button">LOAD THE DEMO ↗</button>
+            </div>
+            <div class="results-content" id="results-content">
+              <div class="result-summary"><div class="summary-cell"><div class="summary-label">Best-fit key</div><div class="summary-value" id="key-result">A minor</div></div><div class="summary-cell"><div class="summary-label">Tempo</div><div class="summary-value" id="tempo-result">—</div><div class="summary-note" id="tempo-status">Auto-detected from rhythm</div></div><div class="summary-cell"><div class="summary-label">Audio length</div><div class="summary-value" id="length-result">11.4 sec</div></div></div>
+              <p class="progression-label">Four main chords · one per bar</p>
+              <div class="chord-list" id="chord-list"></div>
+              <div class="midi-info"><strong>↳ MIDI includes</strong><ol><li>Exactly four chords arranged across four bars.</li><li>Left-hand bass notes and right-hand piano voicings.</li><li>Detected tempo metadata. Edit the BPM or any chord before exporting.</li></ol><p class="fl-tempo-note">FL Studio tip: opening the .mid as a MIDI song is the safest way to read its tempo map. Importing notes directly into an existing Piano Roll may leave the project BPM unchanged; set the project BPM to the value shown above if needed.</p></div>
+              <button class="download-button" id="download-midi-btn" type="button">↓ DOWNLOAD MIDI FOR FL KEYS</button>
+              <p class="disclaimer" id="analysis-disclaimer">These are signal-based estimates, not a guaranteed transcription. Dense melodies, bass harmonics, reverb, and overlapping notes can hide the chord third or root; use the editable chord dropdowns to correct uncertain results.</p>
+            </div>
+          </section>
+        </div>
+        <div class="footer"><span>SYREX LAB © 2026</span><span>PIANO FINDER</span><span>FILES ARE PROCESSED LOCALLY</span></div>
+      </section>
+      <section class="page" id="page-videosync">
+        <div class="hero-row">
+          <div>
+            <div class="eyebrow"><span class="line"></span> VIDEO TIMING / 02</div>
+            <h1>Sync video<br><span style="background:var(--pink);padding:0 7px 3px;border:2px solid var(--ink);box-decoration-break:clone;-webkit-box-decoration-break:clone">to BPM.</span></h1>
+            <p class="intro">Set the original and target tempo, then export a retimed MP4. Conversion runs locally through the included Flask server and FFmpeg.</p>
+          </div>
+          <div class="hero-stamp">BPM IN. MP4 OUT.</div>
+        </div>
+
+        <div class="video-grid">
+          <section class="panel">
+            <div class="panel-head"><div class="panel-title"><span class="mini-icon">▶</span> Video input</div><span class="step-tag">STEP 01</span></div>
+            <div class="panel-body">
+              <div class="dropzone" id="video-dropzone" role="button" tabindex="0" aria-label="Choose or drop a video file">
+                <div class="upload-icon">↑</div>
+                <h3>Drop your video here</h3>
+                <p>MP4, MOV, MKV, AVI, WebM or M4V</p>
+                <button class="file-button" type="button" id="choose-video">CHOOSE VIDEO FILE</button>
+                <input class="hidden-input" type="file" id="video-file-input" accept="video/*,.mkv,.m4v,.avi,.mov,.mp4,.webm">
+              </div>
+              <div class="file-info" id="video-file-info">
+                <div class="file-symbol">▶</div>
+                <div style="min-width:0"><div class="file-name" id="video-file-name">Video file</div><div class="file-meta" id="video-file-meta">Ready</div></div>
+                <button class="file-action" id="remove-video" type="button">REMOVE</button>
+              </div>
+              <div class="video-preview-wrap" id="video-preview-wrap" hidden><video id="video-preview" controls playsinline preload="metadata"></video></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><div class="panel-title"><span class="mini-icon">♩</span> BPM settings</div><span class="step-tag">STEP 02</span></div>
+            <div class="panel-body">
+              <div class="video-settings-grid">
+                <div class="field"><label for="video-source-bpm">Original video BPM</label><input id="video-source-bpm" type="number" min="1" max="1000" step="any" placeholder="Enter original BPM"></div>
+                <div class="field"><label for="video-target-bpm">Target / remix BPM</label><input id="video-target-bpm" type="number" min="1" max="1000" step="any" placeholder="Enter target BPM"></div>
+              </div>
+              <div class="video-metrics">
+                <div class="video-metric"><span>Speed ratio</span><b id="video-ratio">—</b></div>
+                <div class="video-metric"><span>Playback speed</span><b id="video-percent">—</b></div>
+                <div class="video-metric"><span>New duration</span><b id="video-duration">—</b></div>
+              </div>
+              <label class="video-checkbox" for="video-keep-audio"><input type="checkbox" id="video-keep-audio" checked> KEEP ORIGINAL AUDIO</label>
+              <p class="video-help">The ratio is target BPM ÷ original BPM. Ratios from 0.5× to 2× are supported. Keeping audio speeds it up or slows it down too; pitch is not preserved.</p>
+              <button class="primary-button" id="video-start" type="button" disabled>START CONVERSION <span>↗</span></button>
+              <a class="download-button video-download" id="video-download" href="#" hidden>↓ DOWNLOAD SYNCED MP4</a>
+              <div class="video-progress" aria-label="Conversion progress"><div id="video-progress-fill"></div></div>
+              <div class="video-status" id="video-status" role="status" aria-live="polite">Choose a video and enter both BPM values.</div>
+              <details class="video-log-details">
+                <summary>PROCESSING LOG</summary>
+                <div class="button-row"><button class="secondary-button" id="video-copy-log" type="button">COPY LOG</button><button class="secondary-button" id="video-clear-log" type="button">CLEAR LOG</button></div>
+                <pre id="video-log">Ready. Select a video to begin.</pre>
+              </details>
+            </div>
+          </section>
+        </div>
+        <div class="footer"><span>SYREX LAB © 2026</span><span>VIDEO BPM SYNC</span><span>LOCAL MP4 EXPORT</span></div>
+      </section>
+      </div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const pcNames = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  const chordTypes = [
+    {suffix:'',label:'major',ints:[0,4,7]},
+    {suffix:'m',label:'minor',ints:[0,3,7]},
+    {suffix:'dim',label:'diminished',ints:[0,3,6]},
+    {suffix:'aug',label:'augmented',ints:[0,4,8]},
+    {suffix:'sus2',label:'suspended 2nd',ints:[0,2,7]},
+    {suffix:'sus4',label:'suspended 4th',ints:[0,5,7]},
+    {suffix:'7',label:'dominant 7th',ints:[0,4,7,10]},
+    {suffix:'maj7',label:'major 7th',ints:[0,4,7,11]},
+    {suffix:'m7',label:'minor 7th',ints:[0,3,7,10]}
+  ];
+  const NOTE_MIN = 30, NOTE_MAX = 88;
+  let selectedAudioFile = null, decodedAudio = null, audioObjectUrl = null;
+  let currentAnalysis = null;
+  let tempoManual = false;
+  $('tempo-input').addEventListener('input', () => {
+    tempoManual = true;
+    const raw=$('tempo-input').value.trim(), value=Number(raw);
+    if(currentAnalysis && raw!=='' && Number.isFinite(value) && value>=40 && value<=240) {
+      $('tempo-result').textContent=formatBpm(value)+' BPM';
+      $('tempo-status').textContent='Manual BPM override · MIDI uses this value';
+    } else if(currentAnalysis) {
+      $('tempo-result').textContent=formatBpm(currentAnalysis.tempo)+' BPM';
+      $('tempo-status').textContent=currentAnalysis.tempoSource==='detected'?'Rhythm detected · MIDI uses detected BPM':'Set a BPM before exporting';
+    }
+  });
+
+  function toast(message) {
+    const t = $('toast'); t.textContent = message; t.classList.add('show');
+    clearTimeout(toast._timer); toast._timer = setTimeout(() => t.classList.remove('show'), 3800);
+  }
+  function fmtBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(2) + ' MB';
+  }
+  function formatBpm(value) {
+    const bpm = Number(value);
+    return Number.isFinite(bpm) ? (Math.abs(bpm - Math.round(bpm)) < 0.06 ? String(Math.round(bpm)) : bpm.toFixed(1)) : '—';
+  }
+  function formatTime(seconds) {
+    seconds = Math.max(0, seconds || 0);
+    const minutes = Math.floor(seconds / 60);
+    const secs = (seconds - minutes * 60).toFixed(1).padStart(4, '0');
+    return minutes + ':' + secs;
+  }
+  function waitForPaint() { return new Promise(resolve => setTimeout(resolve, 0)); }
+
+  let activePage = 'piano';
+  function showPage(page) {
+    activePage = page;
+    document.querySelectorAll('.page').forEach(section => section.classList.toggle('active', section.id === 'page-' + page));
+    document.querySelectorAll('.nav-btn').forEach(button => button.classList.toggle('active', button.dataset.page === page));
+    $('crumb-current').textContent = page === 'piano' ? 'Piano Finder' : 'Video BPM Sync';
+    $('help-btn').textContent = page === 'piano' ? 'HOW IT WORKS ↗' : 'VIDEO SYNC INFO ↗';
+    const processor = $('processor-label');
+    if (processor) processor.textContent = page === 'piano' ? 'Browser processing' : 'Local FFmpeg';
+  }
+  document.querySelectorAll('.nav-btn').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page)));
+  $('help-btn').addEventListener('click', () => {
+    if (activePage === 'piano') {
+      alert('SYREX LAB — PIANO FINDER\n\n1. Choose an audio file.\n2. Analyze its tempo and harmony.\n3. Review the four main chord labels.\n4. Use a chord dropdown to correct an uncertain chord.\n5. Download the four-bar MIDI and load it in FL Studio.\n\nChord labels and BPM are estimates; use the editable controls to correct them before export.');
+    } else {
+      alert('VIDEO BPM SYNC\n\n1. Choose a local video.\n2. Enter its original and target BPM.\n3. Check the speed multiplier and duration estimate.\n4. Choose whether to keep the original audio.\n5. Start conversion and download the completed MP4.\n\nVideo export uses the included local Flask server and FFmpeg. Run the app at http://127.0.0.1:5000.');
+    }
+  });
+  const exitAppButton = $('exit-app-btn');
+  if (exitAppButton && window.location.protocol !== 'file:') {
+    exitAppButton.hidden = false;
+    exitAppButton.addEventListener('click', async () => {
+      if (!window.confirm('Stop SYREX LAB and close the local server?')) return;
+      exitAppButton.disabled = true;
+      try {
+        const response = await fetch('/api/shutdown', {method:'POST'});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not stop SYREX LAB.');
+        document.body.innerHTML = '<main style="font-family:system-ui;padding:40px;background:#f2f0e8;color:#111"><h1>SYREX LAB stopped.</h1><p>You can close this browser tab.</p></main>';
+      } catch (error) {
+        exitAppButton.disabled = false;
+        toast(error.message || 'Could not stop SYREX LAB.');
+      }
+    });
+  }
+
+  // Upload and decode
+  $('choose-audio').addEventListener('click', e => { e.stopPropagation(); $('audio-input').click(); });
+  $('audio-dropzone').addEventListener('click', e => { if (!e.target.closest('button')) $('audio-input').click(); });
+  $('audio-dropzone').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('audio-input').click(); } });
+  $('audio-input').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
+  setupDropzone($('audio-dropzone'), file => { if (file) loadAudioFile(file); }, /^audio\//i);
+  function setupDropzone(zone, callback, typeTest) {
+    ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover'); }));
+    ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover'); }));
+    zone.addEventListener('drop', e => {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (!f) return;
+      if (typeTest && !typeTest.test(f.type) && !/\.(wav|mp3|m4a|aiff|flac|ogg|webm)$/i.test(f.name)) { toast('Choose a supported audio file.'); return; }
+      callback(f);
+    });
+  }
+  async function loadAudioFile(file) {
+    selectedAudioFile = file; decodedAudio = null; currentAnalysis = null; tempoManual = false; $('tempo-input').value = '';
+    $('audio-file-name').textContent = file.name;
+    $('audio-file-meta').textContent = fmtBytes(file.size) + ' · Decoding audio…';
+    $('audio-file-info').classList.add('visible');
+    $('analyze-btn').disabled = true; $('analyze-btn').textContent = 'DECODING AUDIO…';
+    if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
+    audioObjectUrl = URL.createObjectURL(file); $('audio-preview').src = audioObjectUrl; $('audio-preview').classList.add('visible');
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) throw new Error('Web Audio is not supported in this browser. Try current Chrome or Edge.');
+      const ctx = new Ctx();
+      const arrayBuffer = await file.arrayBuffer();
+      decodedAudio = await ctx.decodeAudioData(arrayBuffer.slice(0));
+      await ctx.close();
+      $('audio-file-meta').textContent = fmtBytes(file.size) + ' · ' + decodedAudio.duration.toFixed(1) + ' sec · Ready';
+      $('analyze-btn').disabled = false; $('analyze-btn').innerHTML = 'ANALYZE CHORDS <span>↗</span>';
+      showEmptyResults();
+      toast('Audio decoded. Analyze the full clip to detect chord changes.');
+    } catch (err) {
+      $('audio-file-meta').textContent = fmtBytes(file.size) + ' · Could not decode';
+      $('analyze-btn').disabled = true; $('analyze-btn').textContent = 'UNSUPPORTED AUDIO FILE';
+      toast(err && err.message ? err.message : 'Could not decode audio. Try WAV or MP3.');
+    }
+  }
+  $('remove-audio').addEventListener('click', clearAudio);
+  $('clear-btn').addEventListener('click', clearAudio);
+  function clearAudio() {
+    selectedAudioFile = null; decodedAudio = null; currentAnalysis = null; tempoManual = false; $('tempo-input').value = ''; $('audio-input').value = '';
+    $('audio-file-info').classList.remove('visible');
+    $('audio-preview').pause(); $('audio-preview').removeAttribute('src'); $('audio-preview').load(); $('audio-preview').classList.remove('visible');
+    $('analyze-btn').disabled = true; $('analyze-btn').innerHTML = 'ANALYZE CHORDS <span>↗</span>';
+    if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl); audioObjectUrl = null;
+    showEmptyResults();
+  }
+  function showEmptyResults() {
+    $('results-empty').style.display = 'flex';
+    $('results-content').classList.remove('visible');
+    $('result-step').textContent = 'WAITING FOR AUDIO';
+  }
+
+  $('analyze-btn').addEventListener('click', async () => {
+    if (!decodedAudio) return;
+    $('analyze-btn').disabled = true; $('analyze-btn').textContent = 'ANALYZING 0%…'; $('result-step').textContent = 'ANALYZING';
+    try {
+      const manualTempo = tempoManual && $('tempo-input').value.trim() !== '' ? Number($('tempo-input').value) : null;
+      const estimate = await analyzeAudio(decodedAudio, manualTempo, pct => {
+        $('analyze-btn').textContent = 'ANALYZING ' + Math.round(pct) + '%…';
+      });
+      $('tempo-input').value = formatBpm(estimate.tempo);
+      tempoManual = false;
+      currentAnalysis = estimate;
+      renderResults(estimate, false);
+      toast('Analysis complete. Check the chord timestamps and edit any uncertain labels before downloading.');
+    } catch (err) {
+      toast('Analysis failed: ' + (err && err.message ? err.message : 'unknown error'));
+      $('result-step').textContent = 'ANALYSIS FAILED';
+    } finally {
+      $('analyze-btn').disabled = !decodedAudio;
+      $('analyze-btn').innerHTML = 'ANALYZE CHORDS <span>↗</span>';
+    }
+  });
+
+  $('demo-btn').addEventListener('click', loadDemo);
+  $('empty-demo-btn').addEventListener('click', loadDemo);
+  function loadDemo() {
+    clearAudio(); $('tempo-input').value = 84; tempoManual = false;
+    const duration = 4 * 4 * 60 / 84;
+    const specs = [[9,1],[5,0],[7,0],[9,1]];
+    const progression = specs.map((c,i) => makeChord(c[0], c[1], .84, i*duration/4, (i+1)*duration/4));
+    currentAnalysis = {key:'A minor',keyRoot:9,mode:'minor',tempo:84,tempoSource:'demo',tempoConfidence:1,progression,duration,sourceName:'Demo progression',confidence:.84};
+    renderResults(currentAnalysis, true);
+    toast('Demo loaded: Am → F → G → Am. Download its timed MIDI to test FL Studio.');
+  }
+
+  // Resample channels with a windowed-sinc low-pass filter so downsampling does not fold high frequencies into chord tones.
+  function sinc(x) { if (Math.abs(x) < 1e-8) return 1; const p = Math.PI*x; return Math.sin(p)/p; }
+  function resampleBufferChannels(buffer, targetRate) {
+    const sourceRate = buffer.sampleRate;
+    const outLength = Math.max(1, Math.round(buffer.length * targetRate / sourceRate));
+    const result = [];
+    if (sourceRate === targetRate) {
+      for (let c=0;c<buffer.numberOfChannels;c++) result.push(new Float32Array(buffer.getChannelData(c)));
+      return result;
+    }
+    // Precompute sinc kernels by fractional sample phase. This keeps a proper low-pass
+    // resampler but avoids millions of per-sample sine/cosine calls during analysis.
+    const cutoff=Math.min(1,targetRate/sourceRate), radius=Math.ceil(6/cutoff), phases=128;
+    const firstOffset=-radius+1, tapCount=2*radius;
+    const kernels=[];
+    for(let phase=0;phase<=phases;phase++) {
+      const frac=phase/phases, weights=new Float64Array(tapCount);let sum=0;
+      for(let j=0;j<tapCount;j++) {
+        const offset=firstOffset+j, d=offset-frac, ad=Math.abs(d)/radius;
+        let w=0;
+        if(ad<1)w=cutoff*sinc(cutoff*d)*(0.5+0.5*Math.cos(Math.PI*ad));
+        weights[j]=w;sum+=w;
+      }
+      if(Math.abs(sum)>1e-12)for(let j=0;j<tapCount;j++)weights[j]/=sum;
+      kernels.push(weights);
+    }
+    for(let c=0;c<buffer.numberOfChannels;c++) {
+      const src=buffer.getChannelData(c),dst=new Float32Array(outLength);
+      for(let i=0;i<outLength;i++) {
+        const pos=i*sourceRate/targetRate;
+        let base=Math.floor(pos),phase=Math.round((pos-base)*phases);
+        if(phase>=phases){base++;phase=0;}
+        const weights=kernels[phase];let value=0,weightSum=0;
+        for(let j=0;j<tapCount;j++) {
+          const ix=base+firstOffset+j;
+          if(ix<0||ix>=src.length)continue;
+          value+=src[ix]*weights[j];weightSum+=weights[j];
+        }
+        dst[i]=Math.abs(weightSum)>1e-12?value/weightSum:0;
+      }
+      result.push(dst);
+    }
+    return result;
+  }
+  function channelsToMono(channels) {
+    const len = channels[0].length, mono = new Float32Array(len);
+    for (let i=0; i<len; i++) { let v=0; for (const ch of channels) v += ch[i] || 0; mono[i]=v/channels.length; }
+    return mono;
+  }
+
+  // Iterative radix-2 FFT. The previous bit-reversal loop was incorrect and
+  // produced invalid spectra, which made every chord estimate unreliable.
+  function fft(re, im) {
+    const n = re.length;
+    if (n < 2 || (n & (n - 1)) !== 0) throw new Error('FFT input length must be a power of two.');
+    let j = 0;
+    for (let i = 0; i < n; i++) {
+      if (i < j) {
+        let temp = re[i]; re[i] = re[j]; re[j] = temp;
+        temp = im[i]; im[i] = im[j]; im[j] = temp;
+      }
+      let bit = n >> 1;
+      while (bit > 0 && j >= bit) { j -= bit; bit >>= 1; }
+      j += bit;
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const angle = -2 * Math.PI / len;
+      const stepR = Math.cos(angle), stepI = Math.sin(angle);
+      for (let base = 0; base < n; base += len) {
+        let wr = 1, wi = 0;
+        const halfLen = len >> 1;
+        for (let k = 0; k < halfLen; k++) {
+          const even = base + k, odd = even + halfLen;
+          const tr = wr * re[odd] - wi * im[odd];
+          const ti = wr * im[odd] + wi * re[odd];
+          const ur = re[even], ui = im[even];
+          re[even] = ur + tr; im[even] = ui + ti;
+          re[odd] = ur - tr; im[odd] = ui - ti;
+          const nextWr = wr * stepR - wi * stepI;
+          wi = wr * stepI + wi * stepR;
+          wr = nextWr;
+        }
+      }
+    }
+  }
+  function normalizeL2(vec) {
+    let s=0; for (const x of vec) s+=x*x; const norm=Math.sqrt(s);
+    if (norm>1e-12) for(let i=0;i<vec.length;i++) vec[i]/=norm;
+    return vec;
+  }
+  function normalizeL1(vec) {
+    let s=0; for (const x of vec) s+=x; if (s>1e-12) for(let i=0;i<vec.length;i++) vec[i]/=s;
+    return vec;
+  }
+  function frameFeatures(channels, center, frameSize, sampleRate, window) {
+    const half=frameSize>>1, mags=new Float64Array(half+1);
+    const chroma=new Float64Array(12), bass=new Float64Array(12);
+    const directChroma=new Float64Array(12), directBass=new Float64Array(12);
+    const lowBin=Math.max(1,Math.floor(40*frameSize/sampleRate));
+    const chromaHigh=Math.min(half-1,Math.ceil(2600*frameSize/sampleRate));
+    const bassHigh=Math.min(half-1,Math.ceil(220*frameSize/sampleRate));
+    let squareSum=0;
+    for (const data of channels) {
+      const re=new Float64Array(frameSize), im=new Float64Array(frameSize);
+      for(let i=0;i<frameSize;i++) {
+        const ix=center-half+i, value=(ix>=0&&ix<data.length)?data[ix]:0;
+        re[i]=value*window[i]; squareSum+=value*value;
+      }
+      fft(re,im);
+      for(let k=1;k<=half;k++) {
+        const mag=Math.hypot(re[k],im[k]);
+        mags[k]+=mag;
+        if(k>=lowBin&&k<=chromaHigh) {
+          const hz=k*sampleRate/frameSize;
+          if(hz>=45) {
+            const midi=Math.round(69+12*Math.log2(hz/440));
+            if(midi>=NOTE_MIN) {
+              const energy=Math.pow(mag,1.4), pc=((midi%12)+12)%12;
+              directChroma[pc]+=energy;
+              if(k<=bassHigh&&hz<=220)directBass[pc]+=energy;
+            }
+          }
+        }
+      }
+    }
+    for(let k=1;k<=half;k++) mags[k]/=channels.length;
+    const rms=Math.sqrt(squareSum/(frameSize*channels.length));
+    if (rms < 0.000025) return {chroma,bass,rms};
+    for(let pc=0;pc<12;pc++){directChroma[pc]/=channels.length;directBass[pc]/=channels.length;}
+
+    // Direct spectral chroma captures observed pitch energy; harmonic salience helps
+    // recover notes whose fundamentals are weak. Mixing both is more stable on stems.
+    const harmonicChroma=new Float64Array(12), harmonicBass=new Float64Array(12);
+    const salience=new Float64Array(NOTE_MAX-NOTE_MIN+1);
+    for(let midi=NOTE_MIN;midi<=NOTE_MAX;midi++) {
+      const f0=440*Math.pow(2,(midi-69)/12); let value=0;
+      for(let h=1;h<=6;h++) {
+        const hz=f0*h; if(hz>Math.min(7600,sampleRate/2-100)) break;
+        const bin=hz*frameSize/sampleRate, k=Math.round(bin);
+        if(k<1||k>=half) continue;
+        const partial=mags[k]*0.62+(mags[k-1]+mags[k+1])*0.19;
+        value += partial/Math.pow(h,1.05);
+      }
+      salience[midi-NOTE_MIN]=value;
+    }
+    for(let i=12;i<salience.length;i++) salience[i]=Math.max(0,salience[i]-0.12*salience[i-12]);
+    for(let i=0;i<salience.length;i++) {
+      const midi=i+NOTE_MIN;
+      let v=Math.pow(salience[i],0.72);
+      if(midi<42) v*=0.76;
+      else if(midi>78) v*=0.78;
+      harmonicChroma[midi%12]+=v;
+      if(midi<=54) harmonicBass[midi%12]+=v;
+    }
+    normalizeL2(directChroma); normalizeL2(harmonicChroma);
+    normalizeL1(directBass); normalizeL1(harmonicBass);
+    for(let pc=0;pc<12;pc++) {
+      // Blend measured spectral pitch classes with harmonic salience. Direct bass
+      // evidence remains separate so overtones are less likely to invent chord roots.
+      chroma[pc]=0.72*directChroma[pc]+0.28*harmonicChroma[pc];
+      bass[pc]=directBass[pc];
+    }
+    normalizeL2(chroma); normalizeL1(bass);
+    return {chroma,bass,rms};
+  }
+
+  function rotateProfileCorrelation(chroma, profile) {
+    const meanA=chroma.reduce((a,b)=>a+b,0)/12, meanB=profile.reduce((a,b)=>a+b,0)/12;
+    let num=0,da=0,db=0;
+    for(let i=0;i<12;i++){const a=chroma[i]-meanA,b=profile[i]-meanB;num+=a*b;da+=a*a;db+=b*b;}
+    return num/Math.sqrt((da*db)||1);
+  }
+  function estimateKey(chroma) {
+    const major=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88];
+    const minor=[6.33,2.68,3.52,5.38,2.6,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+    let best={score:-Infinity,root:0,mode:'minor'};
+    for(let root=0;root<12;root++) for(const mode of ['major','minor']) {
+      const profile=mode==='major'?major:minor;
+      const rotated=chroma.map((_,i)=>chroma[(i+root)%12]);
+      const score=rotateProfileCorrelation(rotated,profile);
+      if(score>best.score)best={score,root,mode};
+    }
+    return {key:pcNames[best.root]+(best.mode==='minor'?' minor':' major'),keyRoot:best.root,mode:best.mode,score:best.score};
+  }
+  function scalePitchClasses(root, mode) {
+    const intervals=mode==='minor'?[0,2,3,5,7,8,10]:[0,2,4,5,7,9,11];
+    return new Set(intervals.map(i=>(root+i)%12));
+  }
+  const chordCandidates = (() => {
+    const list=[];
+    for(let root=0;root<12;root++) for(let typeIndex=0;typeIndex<chordTypes.length;typeIndex++) {
+      const type=chordTypes[typeIndex], template=new Float64Array(12);
+      type.ints.forEach((interval,i)=>{
+        const w = i===0 ? 1.2 : (type.ints.length===4 && i===3 ? 0.52 : (i===1 ? 1.0 : 0.88));
+        template[(root+interval)%12]=w;
+      });
+      normalizeL2(template);
+      list.push({root,typeIndex,type,template});
+    }
+    return list;
+  })();
+  function scoreChords(chroma,bass,keyRoot,mode) {
+    const scale=scalePitchClasses(keyRoot,mode), scores=new Float64Array(chordCandidates.length);
+    for(let i=0;i<chordCandidates.length;i++) {
+      const candidate=chordCandidates[i]; let score=0;
+      for(let pc=0;pc<12;pc++) score+=chroma[pc]*candidate.template[pc];
+      // Prefer a chord whose root agrees with the low-register pitch evidence.
+      score += 0.13*(bass[candidate.root]||0);
+      // Extended chords need evidence for their extra seventh; avoid gratuitous extensions.
+      if(candidate.type.ints.length===4) score -= 0.06;
+      let allDiatonic=true;
+      for(const interval of candidate.type.ints) if(!scale.has((candidate.root+interval)%12)) {allDiatonic=false;break;}
+      score += allDiatonic ? 0.012 : -0.006;
+      scores[i]=score;
+    }
+    return scores;
+  }
+  // Estimate tempo from positive spectral flux, not the RMS volume envelope.
+  // The latter frequently misses syncopated kicks and returns the default value.
+  function estimateTempo(mono, sampleRate) {
+    const frameSize=1024, fftSize=2048;
+    const hop=Math.max(1,Math.round(sampleRate*0.01));
+    const fps=sampleRate/hop;
+    const frameCount=Math.floor((mono.length-frameSize)/hop)+1;
+    if(frameCount<35)return {bpm:null,confidence:0};
+    const window=new Float64Array(frameSize);
+    for(let i=0;i<frameSize;i++)window[i]=0.5-0.5*Math.cos(2*Math.PI*i/(frameSize-1));
+    const flux=new Float64Array(frameCount);
+    let previous=new Float64Array(fftSize/2+1),hasPrevious=false;
+    const maxBin=Math.min(850,fftSize/2-1);
+    for(let frame=0;frame<frameCount;frame++) {
+      const re=new Float64Array(fftSize),im=new Float64Array(fftSize);
+      const offset=frame*hop;
+      for(let i=0;i<frameSize;i++)re[i]=(mono[offset+i]||0)*window[i];
+      fft(re,im);
+      const current=new Float64Array(fftSize/2+1);
+      let value=0;
+      for(let k=2;k<=maxBin;k++) {
+        const logMag=Math.log1p(Math.hypot(re[k],im[k])*1000);
+        current[k]=logMag;
+        if(hasPrevious)value+=Math.max(0,logMag-previous[k]);
+      }
+      flux[frame]=value;
+      previous=current;hasPrevious=true;
+    }
+    let mean=0;for(const v of flux)mean+=v;mean/=flux.length;
+    let energy=0;
+    const onset=new Float64Array(frameCount);
+    for(let i=0;i<frameCount;i++){onset[i]=Math.max(0,flux[i]-mean);energy+=onset[i]*onset[i];}
+    if(energy<1e-10)return {bpm:null,confidence:0};
+
+    // Look for periodicity from 35–200 BPM. If the strongest pulse is a half-time
+    // reading (e.g. 42 BPM), normalize it to the usual 65–175 BPM range.
+    const minLag=Math.max(2,Math.floor(fps*60/200));
+    const maxLag=Math.min(frameCount-3,Math.ceil(fps*60/35));
+    let bestLag=0,bestScore=0;
+    for(let lag=minLag;lag<=maxLag;lag++) {
+      let cross=0,aa=0,bb=0;
+      for(let i=lag;i<frameCount;i++) {
+        const a=onset[i],b=onset[i-lag];cross+=a*b;aa+=a*a;bb+=b*b;
+      }
+      const score=cross/Math.sqrt((aa*bb)||1);
+      if(score>bestScore){bestScore=score;bestLag=lag;}
+    }
+    if(!bestLag||bestScore<0.08)return {bpm:null,confidence:bestScore};
+    let bpm=60*fps/bestLag;
+    while(bpm<65)bpm*=2;
+    while(bpm>175)bpm/=2;
+    bpm=Math.max(40,Math.min(240,Math.round(bpm)));
+    return {bpm,confidence:bestScore};
+  }
+  function bestTwo(values) {
+    let first=-1,second=-1;
+    for(let i=0;i<values.length;i++) {
+      if(first<0||values[i]>values[first]){second=first;first=i;}
+      else if(second<0||values[i]>values[second])second=i;
+    }
+    return [first,second];
+  }
+  function runPath(path) {
+    const runs=[]; let start=0;
+    for(let i=1;i<=path.length;i++) if(i===path.length||path[i]!==path[start]) {
+      runs.push({a:start,b:i,state:path[start]}); start=i;
+    }
+    return runs;
+  }
+  function meanScore(scores,state,a,b) {
+    let total=0; for(let i=a;i<b;i++) total+=scores[state][i];
+    return total/Math.max(1,b-a);
+  }
+  function mergeShortRuns(path,scores,frameSeconds,minSeconds) {
+    let guard=0, changed=true;
+    while(changed&&guard++<path.length*2) {
+      changed=false; const runs=runPath(path);
+      let target=-1,shortest=Infinity;
+      for(let i=0;i<runs.length;i++) {
+        const d=(runs[i].b-runs[i].a)*frameSeconds;
+        if(d<minSeconds&&d<shortest){shortest=d;target=i;}
+      }
+      if(target<0||runs.length<2)break;
+      const r=runs[target]; let replacement;
+      if(target===0) replacement=runs[1].state;
+      else if(target===runs.length-1) replacement=runs[target-1].state;
+      else {
+        const left=runs[target-1].state,right=runs[target+1].state;
+        const l=meanScore(scores,left,r.a,r.b), rr=meanScore(scores,right,r.a,r.b);
+        replacement=l>=rr?left:right;
+      }
+      for(let i=r.a;i<r.b;i++)path[i]=replacement;
+      changed=true;
+    }
+    return runPath(path);
+  }
+  // Compress frame-level harmony into exactly four main chord segments.
+  // Dynamic programming chooses four contiguous regions; adjacent regions must
+  // use different chord states so the output does not waste a slot repeating one chord.
+  function findFourMainSegments(scores, frameSeconds) {
+    const states=scores.length, originalFrames=scores[0].length, groups=4;
+    const stride=Math.max(1,Math.ceil(originalFrames/220));
+    const frames=Math.ceil(originalFrames/stride);
+    const stepSeconds=frameSeconds*stride;
+    const reduced=Array.from({length:states},()=>new Float32Array(frames));
+    for(let c=0;c<states;c++)for(let i=0;i<frames;i++){let total=0,count=0;for(let j=i*stride;j<Math.min(originalFrames,(i+1)*stride);j++){total+=scores[c][j];count++;}reduced[c][i]=total/Math.max(1,count);}
+    const minLen=Math.max(1,Math.min(Math.ceil(0.72/stepSeconds),Math.floor(frames/groups)));
+    const prefix=Array.from({length:states},()=>new Float64Array(frames+1));
+    for(let c=0;c<states;c++)for(let i=0;i<frames;i++)prefix[c][i+1]=prefix[c][i]+reduced[c][i];
+    const NEG=-1e30;
+    const dp=Array.from({length:groups+1},()=>Array.from({length:frames+1},()=>{const a=new Float64Array(states);a.fill(NEG);return a;}));
+    const backEnd=Array.from({length:groups+1},()=>Array.from({length:frames+1},()=>new Int32Array(states).fill(-1)));
+    const backState=Array.from({length:groups+1},()=>Array.from({length:frames+1},()=>new Int32Array(states).fill(-1)));
+    for(let end=minLen;end<=frames;end++)for(let c=0;c<states;c++) {
+      dp[1][end][c]=prefix[c][end];backEnd[1][end][c]=0;
+    }
+    for(let group=2;group<=groups;group++) {
+      const firstEnd=group*minLen;
+      for(let end=firstEnd;end<=frames;end++) {
+        const minStart=(group-1)*minLen, maxStart=end-minLen;
+        for(let a=minStart;a<=maxStart;a++) {
+          const prior=dp[group-1][a];
+          const bestStateByRoot=new Int32Array(12);bestStateByRoot.fill(-1);
+          for(let p=0;p<states;p++) {
+            const root=chordCandidates[p].root,old=bestStateByRoot[root];
+            if(old<0||prior[p]>prior[old])bestStateByRoot[root]=p;
+          }
+          let topRoot1=-1,topRoot2=-1;
+          for(let root=0;root<12;root++) {
+            const stateAtRoot=bestStateByRoot[root];if(stateAtRoot<0)continue;
+            if(topRoot1<0||prior[stateAtRoot]>prior[bestStateByRoot[topRoot1]]){topRoot2=topRoot1;topRoot1=root;}
+            else if(topRoot2<0||prior[stateAtRoot]>prior[bestStateByRoot[topRoot2]])topRoot2=root;
+          }
+          if(topRoot1<0||prior[bestStateByRoot[topRoot1]]<=NEG/2)continue;
+          for(let c=0;c<states;c++) {
+            const root=chordCandidates[c].root;
+            const previousRoot=topRoot1!==root?topRoot1:topRoot2;
+            const previousState=previousRoot<0?-1:bestStateByRoot[previousRoot];
+            if(previousState<0||prior[previousState]<=NEG/2)continue;
+            const value=prior[previousState]+prefix[c][end]-prefix[c][a];
+            if(value>dp[group][end][c]) {
+              dp[group][end][c]=value;backEnd[group][end][c]=a;backState[group][end][c]=previousState;
+            }
+          }
+        }
+      }
+    }
+    let lastState=0,best=NEG;
+    for(let c=0;c<states;c++)if(dp[groups][frames][c]>best){best=dp[groups][frames][c];lastState=c;}
+    if(best<=NEG/2) {
+      const out=[];for(let i=0;i<groups;i++){const a=Math.floor(i*originalFrames/groups),b=Math.floor((i+1)*originalFrames/groups);out.push({a,b,state:0});}return out;
+    }
+    const segments=[];let end=frames,state=lastState;
+    for(let group=groups;group>=1;group--) {
+      const a=backEnd[group][end][state];
+      if(a<0)break;
+      segments.push({a,b:end,state});
+      state=backState[group][end][state];end=a;
+    }
+    segments.reverse();
+    if(segments.length!==groups) {
+      return Array.from({length:groups},(_,i)=>({a:Math.floor(i*originalFrames/groups),b:Math.floor((i+1)*originalFrames/groups),state:0}));
+    }
+    return segments.map(segment=>({a:Math.min(originalFrames-1,segment.a*stride),b:Math.min(originalFrames,segment.b*stride),state:segment.state}));
+  }
+
+  function prefixScore(scores,state,start,end) { let sum=0; for(let i=start;i<end;i++)sum+=scores[state][i]; return sum; }
+
+  async function analyzeAudio(buffer,manualTempo,onProgress) {
+    onProgress(3);
+    const rate=22050, frameSize=8192, hop=2048;
+    const channels=resampleBufferChannels(buffer,rate), mono=channelsToMono(channels);
+    const duration=buffer.duration || mono.length/rate;
+    if(duration<0.45)throw new Error('Audio is too short. Use a clip longer than about half a second.');
+    const window=new Float64Array(frameSize);
+    for(let i=0;i<frameSize;i++)window[i]=0.5-0.5*Math.cos(2*Math.PI*i/(frameSize-1));
+    const frameCount=Math.ceil(mono.length/hop)+1, features=[];
+    let energyFrames=0;
+    for(let i=0;i<frameCount;i++) {
+      const feature=frameFeatures(channels,i*hop,frameSize,rate,window);
+      features.push(feature); if(feature.rms>0.000025)energyFrames++;
+      if(i%6===0){onProgress(5+42*i/frameCount);await waitForPaint();}
+    }
+    if(energyFrames<2)throw new Error('This file appears silent or too quiet to analyze.');
+    // Fill brief silent frames from the nearest pitched frame so a silent gap does not invent chords.
+    for(let i=0;i<features.length;i++) {
+      let sum=features[i].chroma.reduce((a,b)=>a+b,0);
+      if(sum>1e-8)continue;
+      let nearest=-1;
+      for(let d=1;d<features.length;d++) {
+        const left=i-d,right=i+d;
+        if(left>=0&&features[left].chroma.some(v=>v>0)){nearest=left;break;}
+        if(right<features.length&&features[right].chroma.some(v=>v>0)){nearest=right;break;}
+      }
+      if(nearest>=0)features[i]={...features[nearest],rms:features[i].rms};
+    }
+    const smoothing=1;
+    const smoothed=[];
+    for(let i=0;i<features.length;i++) {
+      const chroma=new Float64Array(12),bass=new Float64Array(12); let n=0;
+      for(let j=Math.max(0,i-smoothing);j<=Math.min(features.length-1,i+smoothing);j++) {
+        for(let k=0;k<12;k++){chroma[k]+=features[j].chroma[k];bass[k]+=features[j].bass[k];} n++;
+      }
+      for(let k=0;k<12;k++){chroma[k]/=n;bass[k]/=n;}
+      normalizeL2(chroma); normalizeL1(bass);
+      smoothed.push({chroma,bass,rms:features[i].rms});
+    }
+    const globalChroma=new Float64Array(12); let globalCount=0;
+    for(const f of features)if(f.rms>0.000025){for(let k=0;k<12;k++)globalChroma[k]+=f.chroma[k];globalCount++;}
+    if(!globalCount)throw new Error('No pitched audio was detected. Try an instrumental or a clearer stem.');
+    for(let k=0;k<12;k++)globalChroma[k]/=globalCount;
+    const key=estimateKey(globalChroma);
+    const tempoEstimate=estimateTempo(mono,rate);
+    const manualValid=Number.isFinite(manualTempo)&&manualTempo>=40&&manualTempo<=240;
+    const tempo=manualValid?Math.round(manualTempo*10)/10:(tempoEstimate.bpm||84);
+    const tempoSource=manualValid?'manual':(tempoEstimate.bpm?'detected':'fallback');
+    onProgress(50); await waitForPaint();
+
+    const stateCount=chordCandidates.length, N=smoothed.length;
+    const scores=Array.from({length:stateCount},()=>new Float32Array(N));
+    for(let frame=0;frame<N;frame++) {
+      const s=scoreChords(smoothed[frame].chroma,smoothed[frame].bass,key.keyRoot,key.mode);
+      for(let state=0;state<stateCount;state++)scores[state][frame]=s[state];
+      if(frame%10===0){onProgress(50+22*frame/N);await waitForPaint();}
+    }
+    const frameSeconds=hop/rate;
+    const segments=findFourMainSegments(scores,frameSeconds);
+    const barSeconds=4*60/tempo;
+    const progression=segments.map((segment,i)=>{
+      const avgScores=new Float64Array(stateCount);
+      const count=Math.max(1,segment.b-segment.a);
+      for(let state=0;state<stateCount;state++)avgScores[state]=(prefixScore(scores,state,segment.a,segment.b))/count;
+      const ordered=Array.from(avgScores, (score,state)=>({score,state})).sort((a,b)=>b.score-a.score);
+      const state=segment.state;
+      const scoreAtState=avgScores[state];
+      const runner=ordered.find(item=>item.state!==state);
+      const margin=Math.max(0,scoreAtState-(runner?runner.score:scoreAtState));
+      const confidence=Math.max(0.18,Math.min(0.88,0.30+margin*2.6));
+      const candidate=chordCandidates[state];
+      return makeChord(candidate.root,candidate.typeIndex,confidence,i*barSeconds,(i+1)*barSeconds);
+    });
+    onProgress(100); await waitForPaint();
+    return {key:key.key,keyRoot:key.keyRoot,mode:key.mode,keyScore:key.score,tempo,tempoSource,tempoConfidence:tempoSource==='detected'?tempoEstimate.confidence:0,progression,duration,sourceName:selectedAudioFile?selectedAudioFile.name:'Audio',confidence:progression.reduce((a,c)=>a+c.confidence,0)/Math.max(1,progression.length)};
+  }
+  function makeChord(root,typeIndex,confidence,start=0,end=1) {
+    const type=chordTypes[typeIndex];
+    return {root,typeIndex,suffix:type.suffix,label:pcNames[root]+type.suffix,typeLabel:type.label,intervals:type.ints.slice(),notes:type.ints.map(i=>pcNames[(root+i)%12]),score:0,confidence,start,end};
+  }
+  function renderResults(analysis,isDemo) {
+    $('results-empty').style.display='none'; $('results-content').classList.add('visible');
+    $('result-step').textContent=isDemo?'DEMO READY':'4 MAIN CHORDS';
+    $('key-result').textContent=analysis.key; $('length-result').textContent=analysis.duration.toFixed(1)+' sec';
+    const tempoStatus=$('tempo-status');
+    const editedTempo=tempoManual&&$('tempo-input').value.trim()!==''&&Number($('tempo-input').value)>=40&&Number($('tempo-input').value)<=240?Number($('tempo-input').value):null;
+    $('tempo-result').textContent=formatBpm(editedTempo===null?analysis.tempo:editedTempo)+' BPM';
+    if(editedTempo!==null) tempoStatus.textContent='Manual BPM override · MIDI uses this value';
+    else if(analysis.tempoSource==='manual') tempoStatus.textContent='Manual BPM override';
+    else if(analysis.tempoSource==='demo') tempoStatus.textContent='Demo tempo';
+    else if(analysis.tempoSource==='detected') tempoStatus.textContent=analysis.tempoConfidence>=0.3?'Rhythm detected · strong fit':'Rhythm detected · moderate fit';
+    else tempoStatus.textContent='No clear pulse · 84 BPM fallback';
+    const list=$('chord-list'); list.innerHTML='';
+    analysis.progression.forEach((chord,i)=>{
+      const card=document.createElement('div');card.className='chord-card';
+      const bar=document.createElement('div');bar.className='chord-bar';bar.textContent='CHORD '+String(i+1).padStart(2,'0');
+      const time=document.createElement('div');time.className='chord-time';time.textContent='BAR '+String(i+1).padStart(2,'0');
+      const name=document.createElement('div');name.className='chord-name';name.textContent=chord.label;
+      const notes=document.createElement('div');notes.className='chord-notes';notes.textContent=chord.notes.join(' · ');
+      const confidence=document.createElement('div');confidence.className='confidence';confidence.title='Relative spectral fit, not a probability';
+      const fill=document.createElement('span');fill.style.width=Math.round(chord.confidence*100)+'%';confidence.appendChild(fill);
+      const editLabel=document.createElement('label');editLabel.className='chord-edit-label';editLabel.textContent='Correct chord';
+      const edit=document.createElement('select');edit.className='chord-edit';edit.setAttribute('aria-label','Correct chord '+(i+1));
+      chordCandidates.forEach((candidate,candidateIndex)=>{
+        const option=document.createElement('option');option.value=String(candidateIndex);option.textContent=pcNames[candidate.root]+candidate.type.suffix;
+        if(candidate.root===chord.root&&candidate.typeIndex===chord.typeIndex)option.selected=true;
+        edit.appendChild(option);
+      });
+      edit.addEventListener('change',()=>{
+        const candidate=chordCandidates[Number(edit.value)];
+        const replacement=makeChord(candidate.root,candidate.typeIndex,chord.confidence,chord.start,chord.end);
+        analysis.progression[i]=replacement;
+        currentAnalysis=analysis;
+        renderResults(analysis,isDemo);
+        toast('Chord '+(i+1)+' updated to '+replacement.label+'. The MIDI export will use your correction.');
+      });
+      card.append(bar,time,name,notes,confidence,editLabel,edit);list.appendChild(card);
+    });
+    $('analysis-disclaimer').textContent=isDemo
+      ? 'Demo only: Am → F → G → Am, one chord per bar at 84 BPM. This is a sample to test MIDI export, not an analysis of an uploaded recording.'
+      : 'Four chord estimates from '+(analysis.sourceName||'the selected audio')+'. A four-chord result is a compact summary rather than a transcription of every passing harmony. Correct uncertain labels before exporting the four-bar MIDI.';
+  }
+
+  const chordOutput = $('chord-output');
+  function updateChordOutputUI() {
+    const mode = chordOutput.value;
+    const button = $('download-midi-btn');
+    const note = $('chord-output-note');
+    if (mode === 'two-bar') {
+      button.textContent = '↓ DOWNLOAD 2-BAR / 4-CHORD MIDI';
+      note.textContent = 'Four main chords across two bars: each chord lasts two beats, with piano voicing and bass root.';
+    } else if (mode === 'triads') {
+      button.textContent = '↓ DOWNLOAD 3-NOTE CHORDS MIDI';
+      note.textContent = 'Exactly 3 notes per chord: four main chords across four bars, one chord per bar.';
+    } else if (mode === 'piano') {
+      button.textContent = '↓ DOWNLOAD PIANO MIDI';
+      note.textContent = 'MIDI contains piano chord voicings doubled in octaves, across four bars.';
+    } else {
+      button.textContent = '↓ DOWNLOAD PIANO + BASS MIDI';
+      note.textContent = 'MIDI contains piano chord voicings plus a bass root, across four bars.';
+    }
+  }
+  chordOutput.addEventListener('change', updateChordOutputUI);
+  updateChordOutputUI();
+
+  $('download-midi-btn').addEventListener('click', () => {
+    if(!currentAnalysis){toast('Analyze audio or load the demo first.');return;}
+    const bpm=Math.max(40,Math.min(240,Number($('tempo-input').value)||currentAnalysis.tempo||84));
+    const mode=chordOutput.value;
+    const base=(currentAnalysis.sourceName||'SYREX-LAB').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'')||'SYREX-LAB';
+    const bytes=buildMidi(currentAnalysis.progression,bpm,currentAnalysis.duration,mode);
+    const blob=new Blob([bytes],{type:'audio/midi'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;
+    const suffix=mode==='two-bar' ? '-4-chords-2-bars' : mode==='triads' ? '-3-note-chords-4-bars' : '-piano-finder-4-chords';
+    a.download=base+suffix+'.mid';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    const message=mode==='two-bar' ? '2-bar MIDI with four chords downloaded at ' : mode==='triads' ? '4-bar MIDI with exactly 3 notes per chord downloaded at ' : 'Four-bar MIDI downloaded at ';
+    toast(message+formatBpm(bpm)+' BPM.');
+  });
+
+  // MIDI file writer. Normal outputs use four bars; the 2-bar option places four chords
+  // on successive half-bars (two beats per chord), with tempo metadata covering the file.
+  function buildMidi(progression,bpm,duration,outputMode='piano-bass') {
+    const tpq=480, tempo=Math.round(60000000/Math.max(40,Math.min(240,bpm)));
+    const totalBars=outputMode==='two-bar'?2:4;
+    const chordTicks=totalBars*4*tpq/Math.min(4,progression.length);
+    const header=concatBytes([ascii('MThd'),u32(6),u16(1),u16(2),u16(tpq)]);
+    const tempoEvents=[];
+    const tempoLabel=ascii('Tempo');
+    tempoEvents.push(event(0,[0xFF,0x03,...varLen(tempoLabel.length),...tempoLabel],-2));
+    tempoEvents.push(event(0,[0xFF,0x51,0x03,(tempo>>16)&255,(tempo>>8)&255,tempo&255],-1));
+    tempoEvents.push(event(0,[0xFF,0x58,0x04,0x04,0x02,0x18,0x08],0));
+    tempoEvents.push(event(totalBars*4*tpq,[0xFF,0x2F,0x00],99));
+    const tempoTrack=makeTrack(tempoEvents);
+    const events=[];
+    const trackLabel=ascii('SYREX LAB - Piano Finder');
+    events.push(event(0,[0xFF,0x03,...varLen(trackLabel.length),...trackLabel],-3));
+    events.push(event(0,[0xC0,0x00],-2)); // General MIDI Acoustic Grand; select FL Keys after import.
+    const gapTicks=12;
+    progression.slice(0,4).forEach((chord,index)=>{
+      // In 2-bar mode each chord lasts two beats; other modes use one chord per bar.
+      const startTick=index*chordTicks;
+      const naturalEndTick=(index+1)*chordTicks;
+      const endTick=Math.max(startTick+24,naturalEndTick-gapTicks);
+      const root=chord.root, bass=36+root, chordBase=48+root;
+      // Triads mode emits exactly three simultaneous chord tones per bar, with no bass or octave doubling.
+      // For 7th chords, keep root + third + fifth so the exported chord stays exactly three notes.
+      const tones = outputMode === 'triads' ? chord.intervals.slice(0, 3) : chord.intervals;
+      const notes = outputMode === 'triads'
+        ? tones.map(n => chordBase + n)
+        : [...((outputMode==='piano-bass'||outputMode==='two-bar')?[bass]:[]), ...chord.intervals.map(n=>chordBase+n), ...chord.intervals.map(n=>chordBase+n+12)];
+      const unique=[...new Set(notes)].filter(n=>n>=0&&n<=127);
+      unique.forEach(note=>{
+        events.push(event(startTick,[0x90,note,82],1));
+        events.push(event(endTick,[0x80,note,0],0));
+      });
+    });
+    events.push(event(totalBars*4*tpq,[0xFF,0x2F,0x00],99));
+    const trackData=[];events.sort((a,b)=>a.tick-b.tick||a.order-b.order);let last=0;
+    for(const e of events){trackData.push(...varLen(Math.max(0,e.tick-last)),...e.bytes);last=e.tick;}
+    const pianoTrack=concatBytes([ascii('MTrk'),u32(trackData.length),trackData]);
+    return concatBytes([header,tempoTrack,pianoTrack]);
+  }
+  function event(tick,bytes,order){return {tick,bytes,order};}
+  function ascii(s){return Array.from(new TextEncoder().encode(s));}
+  function u16(n){return [(n>>8)&255,n&255];}
+  function u32(n){return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255];}
+  function concatBytes(arrays){const out=[];for(const a of arrays)out.push(...a);return new Uint8Array(out);}
+  function varLen(value){let buffer=value&0x7F;const bytes=[];while((value>>=7)){buffer<<=8;buffer|=((value&0x7F)|0x80);}while(true){bytes.push(buffer&255);if(buffer&0x80)buffer>>=8;else break;}return bytes;}
+  function makeTrack(events){events.sort((a,b)=>a.tick-b.tick||a.order-b.order);const data=[];let last=0;for(const e of events){data.push(...varLen(Math.max(0,e.tick-last)),...e.bytes);last=e.tick;}return concatBytes([ascii('MTrk'),u32(data.length),data]);}
+
+
+})();
+</script>
+
+<script id="syrex-video-sync">
+(() => {
+  'use strict';
+  const $v = id => document.getElementById(id);
+  const state = {file:null, objectUrl:null, busy:false, jobId:null, logs:'Ready. Select a video to begin.', pollAbort:false};
+  const fmtSize = bytes => bytes < 1048576 ? (bytes/1024).toFixed(1)+' KB' : (bytes/1048576).toFixed(1)+' MB';
+  const fmtDuration = seconds => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '—';
+    const whole = Math.round(seconds), minutes = Math.floor(whole/60), secs = whole%60;
+    return minutes+':'+String(secs).padStart(2,'0');
+  };
+  const cleanNum = (value, places=6) => Number(value).toFixed(places).replace(/0+$/,'').replace(/\.$/,'');
+  function appendLog(line) {
+    state.logs += (state.logs ? '\n' : '') + String(line);
+    if (state.logs.length > 40000) state.logs = state.logs.slice(-40000);
+    $v('video-log').textContent = state.logs;
+    $v('video-log').scrollTop = $v('video-log').scrollHeight;
+  }
+  function setStatus(message, kind='normal') {
+    const el=$v('video-status'); el.textContent=message; el.dataset.state=kind;
+  }
+  function setProgress(value) {
+    $v('video-progress-fill').style.width=Math.max(0,Math.min(100,value))+'%';
+  }
+  function values() {
+    const source=Number($v('video-source-bpm').value),target=Number($v('video-target-bpm').value);
+    const ratio=source>0&&target>0?target/source:NaN;
+    return {source,target,ratio,validNumbers:Number.isFinite(source)&&source>0&&Number.isFinite(target)&&target>0};
+  }
+  function updateMetrics() {
+    const {source,target,ratio,validNumbers}=values();
+    if (!validNumbers) {
+      $v('video-ratio').textContent=$v('video-percent').textContent='—';
+      $v('video-duration').textContent='—';
+    } else {
+      $v('video-ratio').textContent=cleanNum(ratio,10)+'×';
+      $v('video-percent').textContent=cleanNum(ratio*100,4)+'%';
+      const duration=$v('video-preview').duration;
+      $v('video-duration').textContent=Number.isFinite(duration)?fmtDuration(duration/ratio):'—';
+    }
+    const validRatio=validNumbers&&ratio>=0.5&&ratio<=2;
+    $v('video-start').disabled=!state.file||state.busy||!validRatio;
+    if (state.busy) return;
+    if (!state.file) setStatus('Choose a video and enter both BPM values.');
+    else if (!validNumbers) setStatus('Enter positive BPM values to calculate the speed ratio.');
+    else if (!validRatio) setStatus('This version supports speed ratios from 0.5× to 2×. Adjust the target BPM.','error');
+    else setStatus('Ready to convert · '+cleanNum(ratio,6)+'× speed ratio.');
+  }
+  function setBusy(busy) {
+    state.busy=busy;
+    $v('video-file-input').disabled=busy;
+    $v('choose-video').disabled=busy;
+    $v('remove-video').disabled=busy;
+    $v('video-source-bpm').disabled=busy;
+    $v('video-target-bpm').disabled=busy;
+    $v('video-keep-audio').disabled=busy;
+    updateMetrics();
+  }
+  function loadVideo(file) {
+    if (!file) return;
+    const name=file.name||'video';
+    if (!/\.(mp4|mov|mkv|avi|webm|m4v)$/i.test(name) && !(file.type||'').startsWith('video/')) {
+      setStatus('Choose a supported video file: MP4, MOV, MKV, AVI, WebM or M4V.','error'); return;
+    }
+    if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
+    state.file=file; state.objectUrl=URL.createObjectURL(file);
+    const preview=$v('video-preview'); preview.src=state.objectUrl; preview.load();
+    $v('video-preview-wrap').hidden=false;
+    $v('video-file-name').textContent=name;
+    $v('video-file-meta').textContent=fmtSize(file.size)+' · local preview';
+    $v('video-file-info').classList.add('visible');
+    $v('video-download').hidden=true; setProgress(0);
+    appendLog('Selected '+name+' ('+fmtSize(file.size)+').');
+    updateMetrics();
+  }
+  function clearVideo() {
+    if (state.busy) return;
+    if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);
+    state.objectUrl=null;state.file=null;
+    const preview=$v('video-preview');preview.pause();preview.removeAttribute('src');preview.load();
+    $v('video-preview-wrap').hidden=true;$v('video-file-info').classList.remove('visible');$v('video-file-input').value='';$v('video-download').hidden=true;
+    setProgress(0);updateMetrics();
+  }
+  $v('choose-video').addEventListener('click', e => {e.stopPropagation();$v('video-file-input').click();});
+  $v('video-dropzone').addEventListener('click', e => {if(!e.target.closest('button'))$v('video-file-input').click();});
+  $v('video-dropzone').addEventListener('keydown', e => {if(e.key==='Enter'||e.key===' '){e.preventDefault();$v('video-file-input').click();}});
+  ['dragenter','dragover'].forEach(name=>$v('video-dropzone').addEventListener(name,e=>{e.preventDefault();e.stopPropagation();$v('video-dropzone').classList.add('dragover');}));
+  ['dragleave','drop'].forEach(name=>$v('video-dropzone').addEventListener(name,e=>{e.preventDefault();e.stopPropagation();$v('video-dropzone').classList.remove('dragover');}));
+  $v('video-dropzone').addEventListener('drop',e=>{const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadVideo(f);});
+  $v('video-file-input').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)loadVideo(f);});
+  $v('remove-video').addEventListener('click',clearVideo);
+  $v('video-preview').addEventListener('loadedmetadata',updateMetrics);
+  $v('video-source-bpm').addEventListener('input',updateMetrics);
+  $v('video-target-bpm').addEventListener('input',updateMetrics);
+
+  function parseFfmpegProgress(logText) {
+    const re=/time=(\d+):(\d+):(\d+(?:\.\d+)?)/g;let match,last=null;
+    while((match=re.exec(logText))!==null)last=Number(match[1])*3600+Number(match[2])*60+Number(match[3]);
+    const duration=$v('video-preview').duration;
+    if(last!==null&&Number.isFinite(duration)&&duration>0)return Math.max(10,Math.min(95,last/duration*100));
+    return 55;
+  }
+  function pollStatus(jobId) {
+    state.jobId=jobId; state.pollAbort=false;
+    const poll=async()=>{
+      if(state.pollAbort)return;
+      try {
+        const response=await fetch('/api/status/'+encodeURIComponent(jobId),{cache:'no-store'});
+        const result=await response.json();
+        if(!response.ok)throw new Error(result.error||'Could not get conversion status.');
+        if(result.log) { state.logs=result.log; $v('video-log').textContent=state.logs; $v('video-log').scrollTop=$v('video-log').scrollHeight; }
+        if(result.status==='done') {
+          setProgress(100);setStatus('Conversion complete. Your MP4 is ready.','done');
+          $v('video-download').href=result.download_url;$v('video-download').hidden=false;
+          appendLog('Export ready: BPM_SYNC.mp4');setBusy(false);return;
+        }
+        if(result.status==='failed') {
+          setStatus('Conversion failed: '+(result.message||'See the processing log.'),'error');
+          appendLog('ERROR: '+(result.message||'Unknown FFmpeg error'));setBusy(false);return;
+        }
+        if(result.status==='running') {setProgress(parseFfmpegProgress(result.log||''));setStatus('Converting video with FFmpeg…','busy');}
+        else {setProgress(10);setStatus('Queued for conversion…','busy');}
+        window.setTimeout(poll,1000);
+      } catch(error) {
+        setStatus('Status check failed: '+error.message,'error');
+        appendLog('Status error: '+error.message);setBusy(false);
+      }
+    };
+    window.setTimeout(poll,500);
+  }
+  function startUpload() {
+    if(window.location.protocol==='file:') {
+      setStatus('Video export requires the local Flask server. Extract the project ZIP and run run_windows.bat, then open http://127.0.0.1:5000.','error');return;
+    }
+    const {source,target,ratio,validNumbers}=values();
+    if(!state.file){setStatus('Choose a video file first.','error');return;}
+    if(!validNumbers){setStatus('Enter positive original and target BPM values.','error');return;}
+    if(ratio<0.5||ratio>2){setStatus('Speed ratio must be between 0.5× and 2×.','error');return;}
+    if(state.busy)return;
+    state.pollAbort=true;setBusy(true);$v('video-download').hidden=true;setProgress(3);
+    setStatus('Uploading video…','busy');appendLog('Uploading '+state.file.name+'; BPM '+source+' → '+target+'; speed '+cleanNum(ratio,10)+'×.');
+    const form=new FormData();form.append('video',state.file);form.append('original_bpm',String(source));form.append('remix_bpm',String(target));form.append('keep_audio',$v('video-keep-audio').checked?'true':'false');
+    const xhr=new XMLHttpRequest();xhr.open('POST','/api/convert',true);
+    xhr.upload.addEventListener('progress',e=>{if(e.lengthComputable){setProgress(3+Math.round(32*e.loaded/e.total));setStatus('Uploading video… '+Math.round(e.loaded/e.total*100)+'%','busy');}});
+    xhr.onerror=()=>{setStatus('Upload failed. Confirm the Flask server is running at http://127.0.0.1:5000.','error');appendLog('ERROR: Upload/network failure.');setBusy(false);};
+    xhr.onload=()=>{
+      let data={};try{data=JSON.parse(xhr.responseText||'{}');}catch{}
+      if(xhr.status<200||xhr.status>=300){setStatus(data.error||('Upload failed (HTTP '+xhr.status+').'),'error');appendLog('ERROR: '+(data.error||('HTTP '+xhr.status)));setBusy(false);return;}
+      if(!data.job_id){setStatus('Server response did not include a job ID.','error');appendLog('ERROR: Missing job ID.');setBusy(false);return;}
+      setProgress(40);setStatus('Upload complete. Conversion started…','busy');appendLog('Conversion job: '+data.job_id+'; ratio '+cleanNum(data.ratio,10)+'×.');pollStatus(data.job_id);
+    };
+    xhr.send(form);
+  }
+  $v('video-start').addEventListener('click',startUpload);
+  $v('video-copy-log').addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText($v('video-log').textContent);setStatus('Processing log copied.');}
+    catch{setStatus('Clipboard access is blocked. Select the log text and copy it manually.');}
+  });
+  $v('video-clear-log').addEventListener('click',()=>{$v('video-log').textContent='Log view cleared.';state.logs='';});
+  updateMetrics();
+})();
+</script>
+</body>
+</html>
