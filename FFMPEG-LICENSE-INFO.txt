@@ -1,0 +1,14 @@
+SYREX LAB Windows package — FFmpeg information
+
+This build workflow downloads a Windows x64 static GPL FFmpeg build from:
+https://github.com/BtbN/FFmpeg-Builds/releases
+
+FFmpeg project home and license information:
+https://ffmpeg.org/
+https://ffmpeg.org/legal.html
+https://github.com/FFmpeg/FFmpeg
+
+The exact FFmpeg version/commit used by each build is recorded in FFMPEG-BUILD-INFO.txt.
+The downloaded FFmpeg build is a separate executable (ffmpeg.exe) distributed beside
+SYREX_LAB.exe. It is needed for the MP4 retiming feature. Review the applicable FFmpeg
+license and corresponding-source requirements before redistributing a public release.
