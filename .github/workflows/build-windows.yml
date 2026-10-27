@@ -1,4 +1,4 @@
-name: Build SYREX LAB for Windows
+name: Build SYREX LAB v1.1 Desktop EXE
 
 on:
   push:
@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
+    timeout-minutes: 25
     steps:
       - name: Get the repository source
         uses: actions/checkout@v4
@@ -28,7 +29,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pyinstaller
 
-      - name: Download FFmpeg for Windows
+      - name: Download Windows FFmpeg
         shell: pwsh
         run: |
           $zip = Join-Path $env:RUNNER_TEMP "ffmpeg-win64.zip"
@@ -41,26 +42,44 @@ jobs:
           Copy-Item $ffmpeg.FullName (Join-Path $env:GITHUB_WORKSPACE "ffmpeg.exe") -Force
           & (Join-Path $env:GITHUB_WORKSPACE "ffmpeg.exe") -version | Select-Object -First 3 | Set-Content (Join-Path $env:GITHUB_WORKSPACE "FFMPEG-BUILD-INFO.txt")
 
-      - name: Build the Windows app
+      - name: Build single-file desktop app (no console)
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --onefile --console --name SYREX_LAB `
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --name SYREX_LAB_v1.1 `
             --collect-all flask `
             --collect-all jinja2 `
+            --collect-all webview `
+            --collect-all clr_loader `
+            --collect-all pythonnet `
+            --hidden-import webview.platforms.edgechromium `
+            --hidden-import clr_loader `
+            --hidden-import pythonnet `
             --add-data "templates;templates" `
             --add-data "static;static" `
-            server.py
-          if (-not (Test-Path "dist/SYREX_LAB.exe")) { throw "PyInstaller did not create the app executable." }
-          Copy-Item "ffmpeg.exe" "dist/ffmpeg.exe" -Force
+            --add-binary "ffmpeg.exe;." `
+            desktop_launcher.py
+          if (-not (Test-Path "dist/SYREX_LAB_v1.1.exe")) { throw "PyInstaller did not create the desktop executable." }
+
+      - name: Prepare one-click download ZIP
+        shell: pwsh
+        run: |
           Copy-Item "FFMPEG-LICENSE-INFO.txt" "dist/FFMPEG-LICENSE-INFO.txt" -Force
           Copy-Item "FFMPEG-BUILD-INFO.txt" "dist/FFMPEG-BUILD-INFO.txt" -Force
-          Compress-Archive -Path "dist/SYREX_LAB.exe","dist/ffmpeg.exe","dist/FFMPEG-LICENSE-INFO.txt","dist/FFMPEG-BUILD-INFO.txt" -DestinationPath "dist/SYREX_LAB-Windows.zip" -Force
+          Set-Content -Path "dist/README-FIRST.txt" -Value @(
+            "SYREX LAB v1.1 Desktop",
+            "",
+            "Double-click SYREX_LAB_v1.1.exe. No CMD window or external browser should open.",
+            "The existing app interface is displayed inside the desktop window.",
+            "Windows 10/11 with Microsoft Edge WebView2 Runtime is required.",
+            "Keep this license/build information with the executable when redistributing."
+          )
+          Compress-Archive -Path "dist/SYREX_LAB_v1.1.exe","dist/FFMPEG-LICENSE-INFO.txt","dist/FFMPEG-BUILD-INFO.txt","dist/README-FIRST.txt" -DestinationPath "dist/SYREX_LAB_v1.1-Desktop-Windows.zip" -Force
 
-      - name: Save the build as a downloadable artifact
+      - name: Upload Windows desktop app
         uses: actions/upload-artifact@v4
         with:
-          name: SYREX-LAB-Windows
-          path: dist/SYREX_LAB-Windows.zip
+          name: SYREX-LAB-v1.1-Desktop-Windows
+          path: dist/SYREX_LAB_v1.1-Desktop-Windows.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -73,9 +92,9 @@ jobs:
           $tag = $env:GITHUB_REF_NAME
           gh release view "$tag" --json tagName --jq .tagName 2>$null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload "$tag" "dist/SYREX_LAB-Windows.zip" --clobber
+            gh release upload "$tag" "dist/SYREX_LAB_v1.1-Desktop-Windows.zip" --clobber
           } else {
-            gh release create "$tag" "dist/SYREX_LAB-Windows.zip" `
+            gh release create "$tag" "dist/SYREX_LAB_v1.1-Desktop-Windows.zip" `
               --title "SYREX LAB $tag" `
-              --notes "Windows x64 build. Extract the ZIP and keep SYREX_LAB.exe and ffmpeg.exe in the same folder. The local web UI opens in your browser. See the FFmpeg license and build-info files in the ZIP."
+              --notes "Windows x64 desktop build. Extract the ZIP and double-click SYREX_LAB_v1.1.exe. The app opens its interface in an embedded desktop window without a console window or external browser. Microsoft Edge WebView2 Runtime is required. Review the included FFmpeg license and build information."
           }
