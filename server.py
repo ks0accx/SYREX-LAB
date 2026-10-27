@@ -2,12 +2,19 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 from pathlib import Path
 import subprocess, threading, uuid, os, shutil, math, sys, webbrowser
 
-# PyInstaller extracts bundled templates into _MEIPASS for a one-file build.
+# PyInstaller extracts bundled templates and ffmpeg.exe into _MEIPASS in --onefile mode.
 SOURCE_ROOT = Path(__file__).resolve().parent
 RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", SOURCE_ROOT))
 APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else SOURCE_ROOT
-WORK = APP_ROOT / "jobs"
+
+# Persist input/output files outside PyInstaller's temporary extraction directory.
+if getattr(sys, "frozen", False):
+    DATA_ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "SYREX LAB"
+else:
+    DATA_ROOT = APP_ROOT
+WORK = DATA_ROOT / "jobs"
 WORK.mkdir(parents=True, exist_ok=True)
+
 app = Flask(
     __name__,
     template_folder=str(RESOURCE_ROOT / "templates"),
@@ -19,15 +26,14 @@ lock = threading.Lock()
 
 
 def ffmpeg_path():
-    # The GitHub Windows package places ffmpeg.exe beside SYREX_LAB.exe.
-    bundled_candidates = [APP_ROOT / "ffmpeg.exe", RESOURCE_ROOT / "ffmpeg.exe"]
-    for candidate in bundled_candidates:
+    # Prefer FFmpeg bundled into the one-file executable; retain developer PATH fallback.
+    exe_name = 'ffmpeg.exe' if os.name == 'nt' else 'ffmpeg'
+    for candidate in (RESOURCE_ROOT / exe_name, APP_ROOT / exe_name):
         if candidate.is_file():
             return str(candidate)
-    # Keep normal source runs working for developers who installed FFmpeg separately.
     path = shutil.which('ffmpeg')
     if not path:
-        raise RuntimeError('FFmpeg was not found. Keep ffmpeg.exe beside SYREX_LAB.exe, or install FFmpeg and add it to PATH.')
+        raise RuntimeError('Bundled FFmpeg was not found. Rebuild the desktop app with ffmpeg.exe included.')
     return path
 
 
@@ -35,7 +41,7 @@ def worker(job_id, input_path, output_path, ratio, keep_audio):
     log_path = WORK / job_id / 'ffmpeg.log'
     args = [ffmpeg_path(), '-hide_banner', '-y', '-i', str(input_path), '-vf', f'setpts=PTS/{ratio:.12f}', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-pix_fmt', 'yuv420p']
     if keep_audio:
-        # atempo supports 0.5..2.0; this UI constrains ratio to that range.
+        # The existing interface constrains the ratio to 0.5x..2x for this filter.
         args += ['-af', f'atempo={ratio:.12f}', '-c:a', 'aac', '-b:a', '192k']
     else:
         args += ['-an']
@@ -45,9 +51,14 @@ def worker(job_id, input_path, output_path, ratio, keep_audio):
         jobs[job_id]['log'] = 'Starting FFmpeg…\n'
     try:
         with open(log_path, 'w', encoding='utf-8', errors='replace') as log:
-            proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='replace', bufsize=1)
+            creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if os.name == 'nt' else 0
+            proc = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, errors='replace', bufsize=1, creationflags=creationflags
+            )
             for line in proc.stdout:
-                log.write(line); log.flush()
+                log.write(line)
+                log.flush()
                 with lock:
                     jobs[job_id]['log'] = (jobs[job_id]['log'] + line)[-40000:]
             code = proc.wait()
@@ -89,7 +100,6 @@ def convert():
     job_id = uuid.uuid4().hex[:12]
     job_dir = WORK / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
-    # Ignore user-provided path components; retain only a safe suffix.
     suffix = Path(file.filename).suffix.lower()
     if suffix not in {'.mp4', '.mov', '.mkv', '.avi', '.webm', '.m4v'}:
         suffix = '.mp4'
@@ -132,6 +142,6 @@ if __name__ == '__main__':
     url = 'http://127.0.0.1:5000'
     print('SYREX LAB running at ' + url)
     if getattr(sys, 'frozen', False):
-        # Open the local web UI after the Flask server starts up.
+        # If someone explicitly runs server.py as a frozen executable, retain prior behavior.
         threading.Timer(1.2, lambda: webbrowser.open_new(url)).start()
     app.run(host='127.0.0.1', port=5000, debug=False, threaded=True, use_reloader=False)
